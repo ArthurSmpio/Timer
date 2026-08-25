@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timer + Metrônomo + Reddit Backgrounds</title>
+  <style>
+    :root {
+      --accent: #00d4ff;
+      --accent2: #ff6b9d;
+      --bg-glass: rgba(15, 15, 25, 0.72);
+      --text: #f0f0f5;
+      --muted: #a0a0b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+      background: #0a0a12;
+    }
+
+    /* Background layers */
+    #bg-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.4s ease-in-out;
+      filter: brightness(0.55) contrast(1.05);
+    }
+
+    .bg-layer.active {
+      opacity: 1;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.35) 0%,
+        rgba(0,0,0,0.15) 40%,
+        rgba(0,0,0,0.45) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Main content */
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 0.35rem;
+    }
+
+    .panel {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+
+    .panel h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel h2 span {
+      font-size: 1.25rem;
+    }
+
+    /* Timer */
+    .timer-display {
+      font-size: clamp(3.2rem, 12vw, 5.5rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      letter-spacing: 0.04em;
+      margin: 0.5rem 0 1.25rem;
+      text-shadow: 0 0 30px rgba(0, 212, 255, 0.35);
+    }
+
+    .timer-display.finished {
+      color: var(--accent2);
+      animation: pulse 0.8s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.03); }
+    }
+
+    .timer-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .input-group label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .input-group input {
+      width: 72px;
+      padding: 0.55rem 0.4rem;
+      font-size: 1.25rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.35);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+      color: #fff;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      box-shadow: 0 4px 18px rgba(0, 180, 216, 0.35);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 6px 24px rgba(0, 180, 216, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255,255,255,0.18);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e63946, #c1121f);
+    }
+
+    /* Metronome */
+    .metro-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .bpm-value {
+      font-size: 2.8rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bpm-value span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 0.25rem;
+    }
+
+    .beat-indicator {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      transition: background 0.05s, transform 0.05s, box-shadow 0.05s;
+    }
+
+    .beat-indicator.on {
+      background: var(--accent);
+      transform: scale(1.35);
+      box-shadow: 0 0 20px var(--accent);
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 1.25rem;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.15);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Background controls */
+    .subs-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .subs-row input {
+      flex: 1;
+      min-width: 160px;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.35);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .subs-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+      min-height: 1.3em;
+    }
+
+    .status.error {
+      color: #ff8a8a;
+    }
+
+    .status.ok {
+      color: #7dffa3;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      justify-content: center;
+    }
+
+    .chip {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(0, 212, 255, 0.15);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: var(--accent);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(0, 212, 255, 0.28);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: auto;
+      padding-top: 1rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    @media (max-width: 520px) {
+      .panel {
+        padding: 1.25rem 1.1rem;
+      }
+      .timer-inputs {
+        gap: 0.6rem;
+      }
+      .input-group input {
+        width: 64px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="bg-container">
+    <div class="bg-layer" id="bg1"></div>
+    <div class="bg-layer" id="bg2"></div>
+  </div>
+  <div class="overlay"></div>
+
+  <div class="container">
+    <header>
+      <h1>Timer + Metrônomo</h1>
+      <p>Backgrounds ao vivo de subreddits do Reddit</p>
+    </header>
+
+    <!-- TIMER -->
+    <section class="panel">
+      <h2><span>⏱</span> Timer</h2>
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-inputs">
+        <div class="input-group">
+          <label>Minutos</label>
+          <input type="number" id="timerMin" min="0" max="999" value="25" />
+        </div>
+        <div class="input-group">
+          <label>Segundos</label>
+          <input type="number" id="timerSec" min="0" max="59" value="0" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="timerStart">Iniciar</button>
+        <button class="btn-secondary" id="timerPause" disabled>Pausar</button>
+        <button class="btn-secondary" id="timerReset">Reset</button>
+      </div>
+    </section>
+
+    <!-- METRONOME -->
+    <section class="panel">
+      <h2><span>🎵</span> Metrônomo variável</h2>
+      <div class="metro-display">
+        <div class="bpm-value"><span id="bpmValue">100</span><span>BPM</span></div>
+        <div id="tempoLabel" style="font-size:0.8rem;color:var(--muted);min-height:1.2em;">base</div>
+        <div class="beat-indicator" id="beatDot"></div>
+      </div>
+      <div class="slider-row">
+        <span style="font-size:0.85rem;color:var(--muted)">40</span>
+        <input type="range" id="bpmSlider" min="40" max="240" value="100" />
+        <span style="font-size:0.85rem;color:var(--muted)">240</span>
+      </div>
+      <p style="text-align:center;font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">
+        BPM base · o tempo varia sozinho (rápidos são curtos)
+      </p>
+      <div class="btn-row">
+        <button class="btn-primary" id="metroToggle">Iniciar</button>
+      </div>
+    </section>
+
+    <!-- BACKGROUND -->
+    <section class="panel">
+      <h2><span>🖼</span> Background Reddit</h2>
+      <div class="subs-row">
+        <input type="text" id="subInput" placeholder="subreddit (ex: wallpaper)" value="wallpaper" />
+        <button class="btn-primary" id="loadSubs">Carregar</button>
+      </div>
+      <div class="chip-list" id="chipList">
+        <span class="chip" data-sub="wallpaper">r/wallpaper</span>
+        <span class="chip" data-sub="wallpapers">r/wallpapers</span>
+        <span class="chip" data-sub="EarthPorn">r/EarthPorn</span>
+        <span class="chip" data-sub="CityPorn">r/CityPorn</span>
+        <span class="chip" data-sub="NatureIsFuckingLit">r/NatureIsFuckingLit</span>
+        <span class="chip" data-sub="AmateurRoomPorn">r/AmateurRoomPorn</span>
+        <span class="chip" data-sub="Amoledbackgrounds">r/Amoledbackgrounds</span>
+      </div>
+      <p class="status" id="bgStatus">Clique em um subreddit ou digite e carregue.</p>
+    </section>
+
+    <footer>
+      Imagens via Reddit · Proxy CORS · Feito com ❤️
+    </footer>
+  </div>
+
+  <script>
+    // ========== TIMER ==========
+    let timerTotal = 0;
+    let timerRemaining = 0;
+    let timerInterval = null;
+    let timerRunning = false;
+
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerMin = document.getElementById('timerMin');
+    const timerSec = document.getElementById('timerSec');
+    const timerStartBtn = document.getElementById('timerStart');
+    const timerPauseBtn = document.getElementById('timerPause');
+    const timerResetBtn = document.getElementById('timerReset');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function updateTimerDisplay() {
+      timerDisplay.textContent = formatTime(timerRemaining);
+      timerDisplay.classList.toggle('finished', timerRemaining === 0 && timerTotal > 0 && !timerRunning);
+    }
+
+    function playAlarm() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 1.5);
+        // second beep
+        setTimeout(() => {
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.connect(g2);
+          g2.connect(ctx.destination);
+          o2.frequency.value = 660;
+          o2.type = 'sine';
+          g2.gain.setValueAtTime(0.3, ctx.currentTime);
+          g2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+          o2.start();
+          o2.stop(ctx.currentTime + 1);
+        }, 400);
+      } catch (e) {}
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      if (timerRemaining <= 0) {
+        const m = parseInt(timerMin.value) || 0;
+        const s = parseInt(timerSec.value) || 0;
+        timerTotal = m * 60 + s;
+        timerRemaining = timerTotal;
+        if (timerRemaining <= 0) return;
+      }
+      timerRunning = true;
+      timerStartBtn.disabled = true;
+      timerPauseBtn.disabled = false;
+      timerMin.disabled = true;
+      timerSec.disabled = true;
+      timerInterval = setInterval(() => {
+        timerRemaining--;
+        updateTimerDisplay();
+        if (timerRemaining <= 0) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          timerStartBtn.disabled = false;
+          timerPauseBtn.disabled = true;
+          timerMin.disabled = false;
+          timerSec.disabled = false;
+          playAlarm();
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      if (!timerRunning) return;
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerStartBtn.disabled = false;
+      timerPauseBtn.disabled = true;
+      timerMin.disabled = false;
+      timerSec.disabled = false;
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerRemaining = 0;
+      timerTotal = 0;
+      timerStartBtn.disabled = false;
+      timerPauseBtn.disabled = true;
+      timerMin.disabled = false;
+      timerSec.disabled = false;
+      updateTimerDisplay();
+    }
+
+    timerStartBtn.addEventListener('click', startTimer);
+    timerPauseBtn.addEventListener('click', pauseTimer);
+    timerResetBtn.addEventListener('click', resetTimer);
+    updateTimerDisplay();
+
+    // ========== METRONOME (variável) ==========
+    let metroRunning = false;
+    let clickTimeout = null;
+    let tempoTimeout = null;
+    let audioCtx = null;
+    let baseBpm = 100;       // valor do slider
+    let currentBpm = 100;    // BPM real tocando agora
+    let isFastPhase = false;
+
+    const bpmSlider = document.getElementById('bpmSlider');
+    const bpmValue = document.getElementById('bpmValue');
+    const tempoLabel = document.getElementById('tempoLabel');
+    const beatDot = document.getElementById('beatDot');
+    const metroToggle = document.getElementById('metroToggle');
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playClick() {
+      ensureAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      // pitch a bit higher on fast phases for feedback
+      osc.frequency.value = isFastPhase ? 1200 : 1000;
+      osc.type = 'square';
+      gain.gain.setValueAtTime(isFastPhase ? 0.18 : 0.14, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.07);
+
+      beatDot.classList.add('on');
+      setTimeout(() => beatDot.classList.remove('on'), 70);
+    }
+
+    function scheduleNextClick() {
+      if (!metroRunning) return;
+      playClick();
+      const intervalMs = (60 / currentBpm) * 1000;
+      clickTimeout = setTimeout(scheduleNextClick, intervalMs);
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function pickNextTempo() {
+      // 25–35% chance of a short fast burst
+      const goFast = Math.random() < 0.30;
+
+      if (goFast) {
+        // Fast: 1.25x – 1.65x base, short duration
+        const mult = 1.25 + Math.random() * 0.40;
+        currentBpm = Math.round(clamp(baseBpm * mult, 60, 280));
+        isFastPhase = true;
+        tempoLabel.textContent = 'rápido ⚡';
+        tempoLabel.style.color = '#ff6b9d';
+        // Short: 2.5 – 7 seconds
+        return 2500 + Math.random() * 4500;
+      } else {
+        // Slow / moderate: 0.70x – 1.10x base, longer
+        const mult = 0.70 + Math.random() * 0.40;
+        currentBpm = Math.round(clamp(baseBpm * mult, 40, 220));
+        isFastPhase = false;
+        if (mult < 0.88) {
+          tempoLabel.textContent = 'lento';
+          tempoLabel.style.color = '#7dffa3';
+        } else {
+          tempoLabel.textContent = 'moderado';
+          tempoLabel.style.color = 'var(--muted)';
+        }
+        // Longer: 6 – 16 seconds
+        return 6000 + Math.random() * 10000;
+      }
+    }
+
+    function scheduleTempoChange() {
+      if (!metroRunning) return;
+      const durationMs = pickNextTempo();
+      bpmValue.textContent = currentBpm;
+      tempoTimeout = setTimeout(scheduleTempoChange, durationMs);
+    }
+
+    function startMetro() {
+      if (metroRunning) return;
+      ensureAudio();
+      metroRunning = true;
+      metroToggle.textContent = 'Parar';
+      metroToggle.classList.remove('btn-primary');
+      metroToggle.classList.add('btn-danger');
+
+      // start with a moderate tempo near base
+      currentBpm = baseBpm;
+      isFastPhase = false;
+      bpmValue.textContent = currentBpm;
+      tempoLabel.textContent = 'moderado';
+      tempoLabel.style.color = 'var(--muted)';
+
+      scheduleNextClick();
+      // first tempo change after a short intro
+      tempoTimeout = setTimeout(scheduleTempoChange, 4000 + Math.random() * 3000);
+    }
+
+    function stopMetro() {
+      if (!metroRunning) return;
+      metroRunning = false;
+      clearTimeout(clickTimeout);
+      clearTimeout(tempoTimeout);
+      clickTimeout = null;
+      tempoTimeout = null;
+      metroToggle.textContent = 'Iniciar';
+      metroToggle.classList.remove('btn-danger');
+      metroToggle.classList.add('btn-primary');
+      beatDot.classList.remove('on');
+      currentBpm = baseBpm;
+      bpmValue.textContent = baseBpm;
+      tempoLabel.textContent = 'base';
+      tempoLabel.style.color = 'var(--muted)';
+      isFastPhase = false;
+    }
+
+    function toggleMetro() {
+      if (metroRunning) stopMetro();
+      else startMetro();
+    }
+
+    bpmSlider.addEventListener('input', () => {
+      baseBpm = parseInt(bpmSlider.value);
+      if (!metroRunning) {
+        currentBpm = baseBpm;
+        bpmValue.textContent = baseBpm;
+      }
+      // while running, base only affects future tempo picks
+    });
+
+    metroToggle.addEventListener('click', toggleMetro);
+
+    // ========== BACKGROUNDS (Reddit + fallback) ==========
+    const bg1 = document.getElementById('bg1');
+    const bg2 = document.getElementById('bg2');
+    const bgStatus = document.getElementById('bgStatus');
+    const subInput = document.getElementById('subInput');
+    const loadSubsBtn = document.getElementById('loadSubs');
+
+    let imageUrls = [];
+    let currentIdx = 0;
+    let bgInterval = null;
+    let activeLayer = 1;
+
+    // Proxies em ordem de tentativa (Reddit bloqueia muitos)
+    const PROXIES = [
+      (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+      (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+      (u) => `https://api.cors.lol/?url=${encodeURIComponent(u)}`,
+      (u) => `https://corsproxy.org/?${encodeURIComponent(u)}`,
+    ];
+
+    // Fallback: imagens lindas do Unsplash (sempre funcionam como background)
+    const FALLBACK_IMAGES = [
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1920&q=80',
+      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&q=80',
+      'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&q=80',
+      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80',
+      'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80',
+      'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=1920&q=80',
+      'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&q=80',
+      'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=1920&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80',
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&q=80',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80',
+    ];
+
+    function setStatus(msg, type = '') {
+      bgStatus.textContent = msg;
+      bgStatus.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function isImageUrl(url) {
+      if (!url) return false;
+      const lower = url.toLowerCase();
+      return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(lower) ||
+             lower.includes('i.redd.it') ||
+             lower.includes('i.imgur.com') ||
+             lower.includes('preview.redd.it');
+    }
+
+    function extractImages(posts) {
+      const urls = [];
+      for (const child of posts) {
+        const d = child.data;
+        if (d.over_18) continue;
+        if (d.preview && d.preview.images && d.preview.images[0]) {
+          const src = d.preview.images[0].source;
+          if (src && src.url) {
+            urls.push(src.url.replace(/&amp;/g, '&'));
+            continue;
+          }
+        }
+        if (d.url && isImageUrl(d.url)) {
+          urls.push(d.url.replace(/&amp;/g, '&'));
+        }
+      }
+      return [...new Set(urls)];
+    }
+
+    async function fetchViaProxy(targetUrl) {
+      let lastErr = null;
+      for (const makeProxy of PROXIES) {
+        try {
+          const res = await fetch(makeProxy(targetUrl), {
+            headers: { 'Accept': 'application/json' }
+          });
+          if (!res.ok) {
+            lastErr = new Error(`HTTP ${res.status}`);
+            continue;
+          }
+          const text = await res.text();
+          // allorigins raw returns pure content; others too
+          let json;
+          try {
+            json = JSON.parse(text);
+          } catch {
+            // some proxies wrap in { contents: "..." }
+            const wrapped = JSON.parse(text);
+            if (wrapped.contents) json = JSON.parse(wrapped.contents);
+            else throw new Error('JSON inválido');
+          }
+          if (json && json.data && json.data.children) return json;
+          lastErr = new Error('Formato inesperado');
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr || new Error('Todos os proxies falharam');
+    }
+
+    async function fetchSubreddit(sub) {
+      const clean = sub.replace(/^r\//i, '').trim();
+      if (!clean) throw new Error('Subreddit inválido');
+      // tenta www e old
+      const urls = [
+        `https://www.reddit.com/r/${encodeURIComponent(clean)}/hot.json?limit=50`,
+        `https://old.reddit.com/r/${encodeURIComponent(clean)}/hot.json?limit=50`,
+      ];
+      let lastErr = null;
+      for (const url of urls) {
+        try {
+          const json = await fetchViaProxy(url);
+          return extractImages(json.data.children);
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr;
+    }
+
+    function showImage(url) {
+      const next = activeLayer === 1 ? bg2 : bg1;
+      const prev = activeLayer === 1 ? bg1 : bg2;
+      next.style.backgroundImage = `url("${url}")`;
+      void next.offsetWidth;
+      next.classList.add('active');
+      prev.classList.remove('active');
+      activeLayer = activeLayer === 1 ? 2 : 1;
+    }
+
+    function startCycling() {
+      if (bgInterval) clearInterval(bgInterval);
+      if (imageUrls.length === 0) return;
+      showImage(imageUrls[currentIdx]);
+      bgInterval = setInterval(() => {
+        currentIdx = (currentIdx + 1) % imageUrls.length;
+        showImage(imageUrls[currentIdx]);
+      }, 10000);
+    }
+
+    function useFallback(reason) {
+      imageUrls = [...FALLBACK_IMAGES];
+      // embaralha
+      for (let i = imageUrls.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [imageUrls[i], imageUrls[j]] = [imageUrls[j], imageUrls[i]];
+      }
+      currentIdx = 0;
+      startCycling();
+      setStatus(`Reddit bloqueado (${reason}). Usando imagens Unsplash · 10s`, 'error');
+    }
+
+    async function loadBackgrounds(sub) {
+      setStatus('Carregando imagens de r/' + sub + '…');
+      loadSubsBtn.disabled = true;
+      try {
+        const urls = await fetchSubreddit(sub);
+        if (urls.length === 0) {
+          useFallback('nenhuma imagem no sub');
+          return;
+        }
+        imageUrls = urls;
+        currentIdx = 0;
+        startCycling();
+        setStatus(`${urls.length} imagens de r/${sub} · trocando a cada 10s`, 'ok');
+      } catch (err) {
+        console.error(err);
+        useFallback(err.message || '403/proxy');
+      } finally {
+        loadSubsBtn.disabled = false;
+      }
+    }
+
+    loadSubsBtn.addEventListener('click', () => {
+      const sub = subInput.value.trim();
+      if (sub) loadBackgrounds(sub);
+    });
+
+    subInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadSubsBtn.click();
+    });
+
+    document.getElementById('chipList').addEventListener('click', (e) => {
+      if (e.target.classList.contains('chip')) {
+        const sub = e.target.dataset.sub;
+        subInput.value = sub;
+        loadBackgrounds(sub);
+      }
+    });
+
+    // Tenta Reddit; se falhar, já cai no Unsplash
+    loadBackgrounds('wallpaper');
+  </script>
+</body>
+</html>
