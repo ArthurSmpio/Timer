@@ -3,86 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Timer + Metrônomo + Reddit Backgrounds</title>
+  <title>Timer + Metrônomo + Galeria Local</title>
   <style>
     :root {
       --accent: #00d4ff;
       --accent2: #ff6b9d;
-      --bg-glass: rgba(15, 15, 25, 0.72);
+      --bg-glass: rgba(20, 20, 32, 0.92);
       --text: #f0f0f5;
       --muted: #a0a0b8;
+      --panel-border: rgba(255,255,255,0.1);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
       color: var(--text);
-      overflow-x: hidden;
-      background: #0a0a12;
+      background: #0c0c14;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(0, 180, 216, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(255, 107, 157, 0.1) 0%, transparent 45%);
     }
 
-    /* Background layers */
-    #bg-container {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .bg-layer {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0;
-      transition: opacity 1.4s ease-in-out;
-      filter: brightness(0.55) contrast(1.05);
-    }
-
-    .bg-layer.active {
-      opacity: 1;
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      background: linear-gradient(
-        180deg,
-        rgba(0,0,0,0.35) 0%,
-        rgba(0,0,0,0.15) 40%,
-        rgba(0,0,0,0.45) 100%
-      );
-      pointer-events: none;
-    }
-
-    /* Main content */
     .container {
-      position: relative;
-      z-index: 2;
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 2rem 1.25rem 3rem;
+      padding: 1.75rem 1.25rem 3rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      min-height: 100vh;
+      gap: 1.35rem;
     }
 
     header {
       text-align: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
     }
 
     header h1 {
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-size: clamp(1.55rem, 4vw, 2.1rem);
       font-weight: 700;
       letter-spacing: -0.02em;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -93,42 +52,36 @@
 
     header p {
       color: var(--muted);
-      font-size: 0.95rem;
-      margin-top: 0.35rem;
+      font-size: 0.92rem;
+      margin-top: 0.3rem;
     }
 
     .panel {
       background: var(--bg-glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 1.5rem 1.75rem;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
     }
 
     .panel h2 {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
 
-    .panel h2 span {
-      font-size: 1.25rem;
-    }
-
-    /* Timer */
+    /* —— Timer —— */
     .timer-display {
-      font-size: clamp(3.2rem, 12vw, 5.5rem);
+      font-size: clamp(3rem, 11vw, 5rem);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       text-align: center;
       letter-spacing: 0.04em;
-      margin: 0.5rem 0 1.25rem;
-      text-shadow: 0 0 30px rgba(0, 212, 255, 0.35);
+      margin: 0.4rem 0 1.1rem;
+      text-shadow: 0 0 28px rgba(0, 212, 255, 0.3);
     }
 
     .timer-display.finished {
@@ -146,18 +99,18 @@
       justify-content: center;
       gap: 1rem;
       flex-wrap: wrap;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.1rem;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.3rem;
     }
 
     .input-group label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -165,25 +118,22 @@
 
     .input-group input {
       width: 72px;
-      padding: 0.55rem 0.4rem;
-      font-size: 1.25rem;
+      padding: 0.5rem 0.35rem;
+      font-size: 1.2rem;
       text-align: center;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px;
       background: rgba(0,0,0,0.35);
       color: var(--text);
       outline: none;
-      transition: border-color 0.2s;
     }
 
-    .input-group input:focus {
-      border-color: var(--accent);
-    }
+    .input-group input:focus { border-color: var(--accent); }
 
     .btn-row {
       display: flex;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.7rem;
       flex-wrap: wrap;
     }
 
@@ -191,69 +141,63 @@
       cursor: pointer;
       border: none;
       border-radius: 12px;
-      padding: 0.7rem 1.4rem;
-      font-size: 0.95rem;
+      padding: 0.65rem 1.3rem;
+      font-size: 0.92rem;
       font-weight: 600;
       transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
       color: #fff;
     }
 
-    button:active {
-      transform: scale(0.97);
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .btn-primary {
       background: linear-gradient(135deg, #00b4d8, #0077b6);
-      box-shadow: 0 4px 18px rgba(0, 180, 216, 0.35);
+      box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3);
     }
 
     .btn-primary:hover:not(:disabled) {
-      box-shadow: 0 6px 24px rgba(0, 180, 216, 0.5);
+      box-shadow: 0 6px 22px rgba(0, 180, 216, 0.45);
     }
 
     .btn-secondary {
       background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.14);
     }
 
     .btn-secondary:hover:not(:disabled) {
-      background: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.16);
     }
 
     .btn-danger {
       background: linear-gradient(135deg, #e63946, #c1121f);
     }
 
-    /* Metronome */
+    /* —— Metronome —— */
     .metro-display {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
+      gap: 0.85rem;
+      margin-bottom: 0.9rem;
     }
 
     .bpm-value {
-      font-size: 2.8rem;
+      font-size: 2.6rem;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
     }
 
     .bpm-value span {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 500;
       color: var(--muted);
-      margin-left: 0.25rem;
+      margin-left: 0.2rem;
     }
 
     .beat-indicator {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: rgba(255,255,255,0.15);
       transition: background 0.05s, transform 0.05s, box-shadow 0.05s;
@@ -262,16 +206,16 @@
     .beat-indicator.on {
       background: var(--accent);
       transform: scale(1.35);
-      box-shadow: 0 0 20px var(--accent);
+      box-shadow: 0 0 18px var(--accent);
     }
 
     .slider-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.9rem;
       width: 100%;
-      max-width: 360px;
-      margin: 0 auto 1.25rem;
+      max-width: 340px;
+      margin: 0 auto 0.9rem;
     }
 
     input[type="range"] {
@@ -286,122 +230,187 @@
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: var(--accent);
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.45);
     }
 
     input[type="range"]::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: var(--accent);
       cursor: pointer;
       border: none;
     }
 
-    /* Background controls */
-    .subs-row {
+    /* —— Gallery —— */
+    .gallery-panel {
+      padding-bottom: 1.2rem;
+    }
+
+    .gallery-toolbar {
       display: flex;
-      gap: 0.6rem;
       flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 1rem;
     }
 
-    .subs-row input {
-      flex: 1;
-      min-width: 160px;
-      padding: 0.65rem 0.9rem;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
-      background: rgba(0,0,0,0.35);
-      color: var(--text);
-      font-size: 0.95rem;
-      outline: none;
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.92rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 180, 216, 0.3);
     }
 
-    .subs-row input:focus {
-      border-color: var(--accent);
+    .file-label:hover {
+      box-shadow: 0 6px 22px rgba(0, 180, 216, 0.45);
     }
 
-    .status {
+    .file-label input {
+      display: none;
+    }
+
+    .gallery-status {
       font-size: 0.85rem;
       color: var(--muted);
       text-align: center;
-      min-height: 1.3em;
+      min-height: 1.25em;
+      margin-bottom: 0.85rem;
     }
 
-    .status.error {
-      color: #ff8a8a;
+    .gallery-status.ok { color: #7dffa3; }
+    .gallery-status.warn { color: #ffcc66; }
+
+    .viewer {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      max-height: 52vh;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #12121c;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .status.ok {
-      color: #7dffa3;
+    .viewer img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #0a0a10;
+      opacity: 0;
+      transition: opacity 0.9s ease;
     }
 
-    .chip-list {
+    .viewer img.active {
+      opacity: 1;
+    }
+
+    .viewer-empty {
+      position: absolute;
+      inset: 0;
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.75rem;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
+      gap: 0.6rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 1.5rem;
+      text-align: center;
     }
 
-    .chip {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      background: rgba(0, 212, 255, 0.15);
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      color: var(--accent);
+    .viewer-empty span {
+      font-size: 2.5rem;
+      opacity: 0.5;
+    }
+
+    .viewer-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.9rem;
+    }
+
+    .viewer-nav button {
+      min-width: 44px;
+      padding: 0.5rem 0.9rem;
+    }
+
+    .viewer-counter {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 4.5rem;
+      text-align: center;
+    }
+
+    .thumbs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding: 0.75rem 0.15rem 0.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+
+    .thumbs::-webkit-scrollbar { height: 6px; }
+    .thumbs::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+    }
+
+    .thumb {
+      flex: 0 0 auto;
+      width: 72px;
+      height: 54px;
+      border-radius: 8px;
+      object-fit: cover;
       cursor: pointer;
-      transition: background 0.2s;
+      border: 2px solid transparent;
+      opacity: 0.65;
+      transition: opacity 0.2s, border-color 0.2s;
     }
 
-    .chip:hover {
-      background: rgba(0, 212, 255, 0.28);
+    .thumb:hover { opacity: 0.9; }
+    .thumb.active {
+      opacity: 1;
+      border-color: var(--accent);
     }
 
     footer {
       text-align: center;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      margin-top: auto;
-      padding-top: 1rem;
-    }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
+      margin-top: 0.5rem;
     }
 
     @media (max-width: 520px) {
-      .panel {
-        padding: 1.25rem 1.1rem;
-      }
-      .timer-inputs {
-        gap: 0.6rem;
-      }
-      .input-group input {
-        width: 64px;
-      }
+      .panel { padding: 1.15rem 1rem; }
+      .viewer { aspect-ratio: 4 / 3; max-height: 42vh; }
     }
   </style>
 </head>
 <body>
-  <div id="bg-container">
-    <div class="bg-layer" id="bg1"></div>
-    <div class="bg-layer" id="bg2"></div>
-  </div>
-  <div class="overlay"></div>
-
   <div class="container">
     <header>
       <h1>Timer + Metrônomo</h1>
-      <p>Backgrounds ao vivo de subreddits do Reddit</p>
+      <p>Galeria de imagens locais</p>
     </header>
 
     <!-- TIMER -->
@@ -446,28 +455,40 @@
       </div>
     </section>
 
-    <!-- BACKGROUND -->
-    <section class="panel">
-      <h2><span>🖼</span> Background Reddit</h2>
-      <div class="subs-row">
-        <input type="text" id="subInput" placeholder="subreddit (ex: wallpaper)" value="wallpaper" />
-        <button class="btn-primary" id="loadSubs">Carregar</button>
+    <!-- GALLERY -->
+    <section class="panel gallery-panel">
+      <h2><span>🖼</span> Galeria de imagens</h2>
+
+      <div class="gallery-toolbar">
+        <label class="file-label">
+          + Adicionar imagens
+          <input type="file" id="fileInput" accept="image/*" multiple />
+        </label>
+        <button class="btn-secondary" id="clearImages" type="button">Limpar todas</button>
       </div>
-      <div class="chip-list" id="chipList">
-        <span class="chip" data-sub="wallpaper">r/wallpaper</span>
-        <span class="chip" data-sub="wallpapers">r/wallpapers</span>
-        <span class="chip" data-sub="EarthPorn">r/EarthPorn</span>
-        <span class="chip" data-sub="CityPorn">r/CityPorn</span>
-        <span class="chip" data-sub="NatureIsFuckingLit">r/NatureIsFuckingLit</span>
-        <span class="chip" data-sub="AmateurRoomPorn">r/AmateurRoomPorn</span>
-        <span class="chip" data-sub="Amoledbackgrounds">r/Amoledbackgrounds</span>
+
+      <p class="gallery-status" id="galleryStatus">Nenhuma imagem ainda. Adicione fotos do seu computador.</p>
+
+      <div class="viewer" id="viewer">
+        <div class="viewer-empty" id="viewerEmpty">
+          <span>📷</span>
+          Selecione imagens para ver aqui
+        </div>
+        <img id="imgA" alt="" />
+        <img id="imgB" alt="" />
       </div>
-      <p class="status" id="bgStatus">Clique em um subreddit ou digite e carregue.</p>
+
+      <div class="viewer-nav">
+        <button class="btn-secondary" id="prevBtn" type="button" disabled>◀</button>
+        <span class="viewer-counter" id="counter">0 / 0</span>
+        <button class="btn-secondary" id="nextBtn" type="button" disabled>▶</button>
+        <button class="btn-secondary" id="pauseCycleBtn" type="button" disabled>Pausar troca</button>
+      </div>
+
+      <div class="thumbs" id="thumbs"></div>
     </section>
 
-    <footer>
-      Imagens via Reddit · Proxy CORS · Feito com ❤️
-    </footer>
+    <footer>Imagens ficam só no seu navegador · nada é enviado para a internet</footer>
   </div>
 
   <script>
@@ -508,7 +529,6 @@
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 1.5);
-        // second beep
         setTimeout(() => {
           const o2 = ctx.createOscillator();
           const g2 = ctx.createGain();
@@ -586,8 +606,8 @@
     let clickTimeout = null;
     let tempoTimeout = null;
     let audioCtx = null;
-    let baseBpm = 100;       // valor do slider
-    let currentBpm = 100;    // BPM real tocando agora
+    let baseBpm = 100;
+    let currentBpm = 100;
     let isFastPhase = false;
 
     const bpmSlider = document.getElementById('bpmSlider');
@@ -609,7 +629,6 @@
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      // pitch a bit higher on fast phases for feedback
       osc.frequency.value = isFastPhase ? 1200 : 1000;
       osc.type = 'square';
       gain.gain.setValueAtTime(isFastPhase ? 0.18 : 0.14, audioCtx.currentTime);
@@ -633,20 +652,15 @@
     }
 
     function pickNextTempo() {
-      // 25–35% chance of a short fast burst
       const goFast = Math.random() < 0.30;
-
       if (goFast) {
-        // Fast: 1.25x – 1.65x base, short duration
         const mult = 1.25 + Math.random() * 0.40;
         currentBpm = Math.round(clamp(baseBpm * mult, 60, 280));
         isFastPhase = true;
         tempoLabel.textContent = 'rápido ⚡';
         tempoLabel.style.color = '#ff6b9d';
-        // Short: 2.5 – 7 seconds
         return 2500 + Math.random() * 4500;
       } else {
-        // Slow / moderate: 0.70x – 1.10x base, longer
         const mult = 0.70 + Math.random() * 0.40;
         currentBpm = Math.round(clamp(baseBpm * mult, 40, 220));
         isFastPhase = false;
@@ -657,7 +671,6 @@
           tempoLabel.textContent = 'moderado';
           tempoLabel.style.color = 'var(--muted)';
         }
-        // Longer: 6 – 16 seconds
         return 6000 + Math.random() * 10000;
       }
     }
@@ -677,7 +690,6 @@
       metroToggle.classList.remove('btn-primary');
       metroToggle.classList.add('btn-danger');
 
-      // start with a moderate tempo near base
       currentBpm = baseBpm;
       isFastPhase = false;
       bpmValue.textContent = currentBpm;
@@ -685,7 +697,6 @@
       tempoLabel.style.color = 'var(--muted)';
 
       scheduleNextClick();
-      // first tempo change after a short intro
       tempoTimeout = setTimeout(scheduleTempoChange, 4000 + Math.random() * 3000);
     }
 
@@ -718,206 +729,209 @@
         currentBpm = baseBpm;
         bpmValue.textContent = baseBpm;
       }
-      // while running, base only affects future tempo picks
     });
 
     metroToggle.addEventListener('click', toggleMetro);
 
-    // ========== BACKGROUNDS (Reddit + fallback) ==========
-    const bg1 = document.getElementById('bg1');
-    const bg2 = document.getElementById('bg2');
-    const bgStatus = document.getElementById('bgStatus');
-    const subInput = document.getElementById('subInput');
-    const loadSubsBtn = document.getElementById('loadSubs');
+    // ========== GALLERY (local images) ==========
+    const fileInput = document.getElementById('fileInput');
+    const clearImagesBtn = document.getElementById('clearImages');
+    const galleryStatus = document.getElementById('galleryStatus');
+    const viewerEmpty = document.getElementById('viewerEmpty');
+    const imgA = document.getElementById('imgA');
+    const imgB = document.getElementById('imgB');
+    const thumbsEl = document.getElementById('thumbs');
+    const counterEl = document.getElementById('counter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pauseCycleBtn = document.getElementById('pauseCycleBtn');
 
-    let imageUrls = [];
+    let images = []; // { url, name }
     let currentIdx = 0;
-    let bgInterval = null;
-    let activeLayer = 1;
+    let activeImg = 'A';
+    let cycleInterval = null;
+    let cyclePaused = false;
+    const CYCLE_MS = 10000;
 
-    // Proxies em ordem de tentativa (Reddit bloqueia muitos)
-    const PROXIES = [
-      (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-      (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-      (u) => `https://api.cors.lol/?url=${encodeURIComponent(u)}`,
-      (u) => `https://corsproxy.org/?${encodeURIComponent(u)}`,
-    ];
-
-    // Fallback: imagens lindas do Unsplash (sempre funcionam como background)
-    const FALLBACK_IMAGES = [
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1920&q=80',
-      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&q=80',
-      'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&q=80',
-      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80',
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80',
-      'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=1920&q=80',
-      'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&q=80',
-      'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=1920&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80',
-      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&q=80',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80',
-    ];
-
-    function setStatus(msg, type = '') {
-      bgStatus.textContent = msg;
-      bgStatus.className = 'status' + (type ? ' ' + type : '');
+    function setGalleryStatus(msg, type = '') {
+      galleryStatus.textContent = msg;
+      galleryStatus.className = 'gallery-status' + (type ? ' ' + type : '');
     }
 
-    function isImageUrl(url) {
-      if (!url) return false;
-      const lower = url.toLowerCase();
-      return /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(lower) ||
-             lower.includes('i.redd.it') ||
-             lower.includes('i.imgur.com') ||
-             lower.includes('preview.redd.it');
-    }
-
-    function extractImages(posts) {
-      const urls = [];
-      for (const child of posts) {
-        const d = child.data;
-        if (d.over_18) continue;
-        if (d.preview && d.preview.images && d.preview.images[0]) {
-          const src = d.preview.images[0].source;
-          if (src && src.url) {
-            urls.push(src.url.replace(/&amp;/g, '&'));
-            continue;
-          }
-        }
-        if (d.url && isImageUrl(d.url)) {
-          urls.push(d.url.replace(/&amp;/g, '&'));
-        }
+    function updateCounter() {
+      if (images.length === 0) {
+        counterEl.textContent = '0 / 0';
+      } else {
+        counterEl.textContent = `${currentIdx + 1} / ${images.length}`;
       }
-      return [...new Set(urls)];
     }
 
-    async function fetchViaProxy(targetUrl) {
-      let lastErr = null;
-      for (const makeProxy of PROXIES) {
-        try {
-          const res = await fetch(makeProxy(targetUrl), {
-            headers: { 'Accept': 'application/json' }
-          });
-          if (!res.ok) {
-            lastErr = new Error(`HTTP ${res.status}`);
-            continue;
-          }
-          const text = await res.text();
-          // allorigins raw returns pure content; others too
-          let json;
-          try {
-            json = JSON.parse(text);
-          } catch {
-            // some proxies wrap in { contents: "..." }
-            const wrapped = JSON.parse(text);
-            if (wrapped.contents) json = JSON.parse(wrapped.contents);
-            else throw new Error('JSON inválido');
-          }
-          if (json && json.data && json.data.children) return json;
-          lastErr = new Error('Formato inesperado');
-        } catch (e) {
-          lastErr = e;
-        }
+    function updateNavState() {
+      const has = images.length > 0;
+      prevBtn.disabled = !has;
+      nextBtn.disabled = !has;
+      pauseCycleBtn.disabled = !has;
+      clearImagesBtn.disabled = !has;
+    }
+
+    function renderThumbs() {
+      thumbsEl.innerHTML = '';
+      images.forEach((img, i) => {
+        const el = document.createElement('img');
+        el.className = 'thumb' + (i === currentIdx ? ' active' : '');
+        el.src = img.url;
+        el.alt = img.name;
+        el.title = img.name;
+        el.addEventListener('click', () => goTo(i));
+        thumbsEl.appendChild(el);
+      });
+    }
+
+    function showImage(idx) {
+      if (images.length === 0) return;
+      currentIdx = ((idx % images.length) + images.length) % images.length;
+      const nextEl = activeImg === 'A' ? imgB : imgA;
+      const prevEl = activeImg === 'A' ? imgA : imgB;
+
+      nextEl.src = images[currentIdx].url;
+      nextEl.onload = () => {
+        nextEl.classList.add('active');
+        prevEl.classList.remove('active');
+        activeImg = activeImg === 'A' ? 'B' : 'A';
+      };
+      // se já estiver em cache
+      if (nextEl.complete) {
+        nextEl.classList.add('active');
+        prevEl.classList.remove('active');
+        activeImg = activeImg === 'A' ? 'B' : 'A';
       }
-      throw lastErr || new Error('Todos os proxies falharam');
+
+      viewerEmpty.style.display = 'none';
+      updateCounter();
+      renderThumbs();
     }
 
-    async function fetchSubreddit(sub) {
-      const clean = sub.replace(/^r\//i, '').trim();
-      if (!clean) throw new Error('Subreddit inválido');
-      // tenta www e old
-      const urls = [
-        `https://www.reddit.com/r/${encodeURIComponent(clean)}/hot.json?limit=50`,
-        `https://old.reddit.com/r/${encodeURIComponent(clean)}/hot.json?limit=50`,
-      ];
-      let lastErr = null;
-      for (const url of urls) {
-        try {
-          const json = await fetchViaProxy(url);
-          return extractImages(json.data.children);
-        } catch (e) {
-          lastErr = e;
-        }
+    function goTo(idx) {
+      showImage(idx);
+      restartCycle();
+    }
+
+    function nextImage() {
+      if (images.length === 0) return;
+      showImage(currentIdx + 1);
+    }
+
+    function prevImage() {
+      if (images.length === 0) return;
+      showImage(currentIdx - 1);
+    }
+
+    function startCycle() {
+      stopCycle();
+      if (images.length < 2 || cyclePaused) return;
+      cycleInterval = setInterval(nextImage, CYCLE_MS);
+    }
+
+    function stopCycle() {
+      if (cycleInterval) {
+        clearInterval(cycleInterval);
+        cycleInterval = null;
       }
-      throw lastErr;
     }
 
-    function showImage(url) {
-      const next = activeLayer === 1 ? bg2 : bg1;
-      const prev = activeLayer === 1 ? bg1 : bg2;
-      next.style.backgroundImage = `url("${url}")`;
-      void next.offsetWidth;
-      next.classList.add('active');
-      prev.classList.remove('active');
-      activeLayer = activeLayer === 1 ? 2 : 1;
+    function restartCycle() {
+      if (!cyclePaused) startCycle();
     }
 
-    function startCycling() {
-      if (bgInterval) clearInterval(bgInterval);
-      if (imageUrls.length === 0) return;
-      showImage(imageUrls[currentIdx]);
-      bgInterval = setInterval(() => {
-        currentIdx = (currentIdx + 1) % imageUrls.length;
-        showImage(imageUrls[currentIdx]);
-      }, 10000);
+    function toggleCyclePause() {
+      cyclePaused = !cyclePaused;
+      pauseCycleBtn.textContent = cyclePaused ? 'Retomar troca' : 'Pausar troca';
+      if (cyclePaused) stopCycle();
+      else startCycle();
     }
 
-    function useFallback(reason) {
-      imageUrls = [...FALLBACK_IMAGES];
-      // embaralha
-      for (let i = imageUrls.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [imageUrls[i], imageUrls[j]] = [imageUrls[j], imageUrls[i]];
-      }
+    function clearAllImages() {
+      stopCycle();
+      images.forEach(img => URL.revokeObjectURL(img.url));
+      images = [];
       currentIdx = 0;
-      startCycling();
-      setStatus(`Reddit bloqueado (${reason}). Usando imagens Unsplash · 10s`, 'error');
+      imgA.src = '';
+      imgB.src = '';
+      imgA.classList.remove('active');
+      imgB.classList.remove('active');
+      viewerEmpty.style.display = 'flex';
+      thumbsEl.innerHTML = '';
+      updateCounter();
+      updateNavState();
+      setGalleryStatus('Nenhuma imagem ainda. Adicione fotos do seu computador.');
+      cyclePaused = false;
+      pauseCycleBtn.textContent = 'Pausar troca';
     }
 
-    async function loadBackgrounds(sub) {
-      setStatus('Carregando imagens de r/' + sub + '…');
-      loadSubsBtn.disabled = true;
-      try {
-        const urls = await fetchSubreddit(sub);
-        if (urls.length === 0) {
-          useFallback('nenhuma imagem no sub');
-          return;
-        }
-        imageUrls = urls;
-        currentIdx = 0;
-        startCycling();
-        setStatus(`${urls.length} imagens de r/${sub} · trocando a cada 10s`, 'ok');
-      } catch (err) {
-        console.error(err);
-        useFallback(err.message || '403/proxy');
-      } finally {
-        loadSubsBtn.disabled = false;
+    function addFiles(fileList) {
+      const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+      if (files.length === 0) {
+        setGalleryStatus('Nenhum arquivo de imagem válido.', 'warn');
+        return;
+      }
+
+      const wasEmpty = images.length === 0;
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        images.push({ url, name: file.name });
+      });
+
+      setGalleryStatus(
+        `${images.length} imagem(ns) · troca automática a cada 10s`,
+        'ok'
+      );
+      updateNavState();
+
+      if (wasEmpty) {
+        showImage(0);
+        startCycle();
+      } else {
+        renderThumbs();
+        updateCounter();
+        restartCycle();
       }
     }
 
-    loadSubsBtn.addEventListener('click', () => {
-      const sub = subInput.value.trim();
-      if (sub) loadBackgrounds(sub);
-    });
-
-    subInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') loadSubsBtn.click();
-    });
-
-    document.getElementById('chipList').addEventListener('click', (e) => {
-      if (e.target.classList.contains('chip')) {
-        const sub = e.target.dataset.sub;
-        subInput.value = sub;
-        loadBackgrounds(sub);
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length) {
+        addFiles(e.target.files);
+        e.target.value = ''; // permite re-selecionar os mesmos arquivos
       }
     });
 
-    // Tenta Reddit; se falhar, já cai no Unsplash
-    loadBackgrounds('wallpaper');
+    clearImagesBtn.addEventListener('click', clearAllImages);
+    prevBtn.addEventListener('click', () => { prevImage(); restartCycle(); });
+    nextBtn.addEventListener('click', () => { nextImage(); restartCycle(); });
+    pauseCycleBtn.addEventListener('click', toggleCyclePause);
+
+    // drag & drop
+    const viewer = document.getElementById('viewer');
+    ['dragenter', 'dragover'].forEach(ev => {
+      viewer.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        viewer.style.outline = '2px dashed var(--accent)';
+      });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+      viewer.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        viewer.style.outline = '';
+      });
+    });
+    viewer.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files) {
+        addFiles(e.dataTransfer.files);
+      }
+    });
+
+    updateNavState();
   </script>
 </body>
 </html>
